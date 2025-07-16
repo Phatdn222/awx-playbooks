@@ -1,6 +1,6 @@
 ---
 - name: Block a malicious IP using iptables
-  hosts: ubuntu_host
+  hosts: localhost
   become: yes
   vars:
     target_ip: "192.168.1.11"
