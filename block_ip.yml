@@ -1,36 +1,30 @@
 ---
 - name: Block a malicious IP using iptables
-  hosts: all
+  hosts: ubuntu_host
   become: yes
   vars:
     target_ip: "192.168.1.11"
 
   tasks:
-    - name: Debug PATH used by Ansible
-      ansible.builtin.debug:
-        var: ansible_env.PATH
-
-    - name: Block IP using iptables (explicit full path)
+    - name: Kiểm tra rule đã tồn tại chưa
       ansible.builtin.command: >
-        /usr/sbin/iptables -C INPUT -s {{ target_ip }} -j DROP
+        iptables -C INPUT -s {{ target_ip }} -j DROP
       register: check_rule
       failed_when: false
 
-    - name: Append IP block rule if not present
+    - name: Thêm rule nếu chưa tồn tại
       ansible.builtin.command: >
-        /usr/sbin/iptables -A INPUT -s {{ target_ip }} -j DROP
+        iptables -A INPUT -s {{ target_ip }} -j DROP
       when: check_rule.rc != 0
 
-    - name: Save iptables rules (Debian/Ubuntu)
-      ansible.builtin.command: >
-        /usr/sbin/iptables-save
+    - name: Lưu iptables vào file
+      ansible.builtin.command: iptables-save
       register: iptables_rules
 
-    - name: Write rules to /etc/iptables/rules.v4
-      ansible.builtin.copy:
+    - name: Ghi file rules.v4
+      copy:
         content: "{{ iptables_rules.stdout }}"
         dest: /etc/iptables/rules.v4
-      when: ansible_os_family == "Debian"
-      ignore_errors: yes
+
 
 
