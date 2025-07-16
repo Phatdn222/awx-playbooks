@@ -3,19 +3,34 @@
   hosts: all
   become: yes
   vars:
-    target_ip: "192.168.1.11"
+    target_ip: "192.168.1.11"  # Thay IP tại đây hoặc qua Extra Vars
 
   tasks:
+    - name: Ensure iptables command is found (debug PATH)
+      ansible.builtin.shell: echo $PATH
+      register: debug_path
+      changed_when: false
+
+    - name: Show PATH used during playbook execution
+      ansible.builtin.debug:
+        var: debug_path.stdout
+
     - name: Block IP using iptables (only if not already blocked)
-      ansible.builtin.command: >
-        /usr/sbin/iptables -C INPUT -s {{ target_ip }} -j DROP || /usr/sbin/iptables -A INPUT -s {{ target_ip }} -j DROP
+      ansible.builtin.shell: >
+        iptables -C INPUT -s {{ target_ip }} -j DROP ||
+        iptables -A INPUT -s {{ target_ip }} -j DROP
       args:
         executable: /bin/bash
+      environment:
+        PATH: "/usr/sbin:/usr/bin:/sbin:/bin"
 
     - name: Save iptables rules (Debian/Ubuntu)
-      ansible.builtin.command: >
-        /usr/sbin/iptables-save > /etc/iptables/rules.v4
+      ansible.builtin.shell: >
+        iptables-save > /etc/iptables/rules.v4
       args:
         executable: /bin/bash
       when: ansible_os_family == "Debian"
-      ignore_errors: yes
+      environment:
+        PATH: "/usr/sbin:/usr/bin:/sbin:/bin"
+      ignore_errors: yes  # Có thể bị lỗi nếu chưa cài iptables-persistent
+
