@@ -4,7 +4,7 @@
   hosts: all
   become: yes
   vars:
-    target_ip: "1.2.3.4"  # Mặc định, có thể override bằng Survey hoặc Extra Vars
+    target_ip: "192.168.1.11"  # Mặc định, có thể override bằng Survey hoặc Extra Vars
 
   tasks:
     - name: Block IP using iptables (only if not already blocked)
