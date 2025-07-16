@@ -8,16 +8,13 @@
   tasks:
     - name: Block IP using iptables (only if not already blocked)
       ansible.builtin.shell: >
-        iptables -C INPUT -s {{ target_ip }} -j DROP ||
-        iptables -A INPUT -s {{ target_ip }} -j DROP
+        /usr/sbin/iptables -C INPUT -s {{ target_ip }} -j DROP ||
+        /usr/sbin/iptables -A INPUT -s {{ target_ip }} -j DROP
       args:
         warn: false
-      environment:
-        PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
     - name: Save iptables rules (Debian/Ubuntu)
-      ansible.builtin.shell: iptables-save > /etc/iptables/rules.v4
+      ansible.builtin.shell: >
+        /usr/sbin/iptables-save > /etc/iptables/rules.v4
       when: ansible_os_family == "Debian"
       ignore_errors: yes
-      environment:
-        PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
