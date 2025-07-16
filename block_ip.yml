@@ -1,27 +1,20 @@
+
 ---
 - name: Block a malicious IP using iptables
   hosts: all
   become: yes
   vars:
-    target_ip: "1.2.3.4"  # mặc định (có thể override bằng survey hoặc extra_vars)
-  tasks:
-    - name: Ensure iptables package is installed
-      ansible.builtin.package:
-        name: iptables
-        state: present
+    target_ip: "1.2.3.4"  # Mặc định, có thể override bằng Survey hoặc Extra Vars
 
-    - name: Block IP using iptables (if not already blocked)
+  tasks:
+    - name: Block IP using iptables (only if not already blocked)
       ansible.builtin.shell: >
         iptables -C INPUT -s {{ target_ip }} -j DROP ||
         iptables -A INPUT -s {{ target_ip }} -j DROP
       args:
         warn: false
 
-    - name: Save iptables rules (CentOS/RedHat)
-      ansible.builtin.shell: service iptables save
-      when: ansible_os_family == "RedHat"
-
     - name: Save iptables rules (Debian/Ubuntu)
       ansible.builtin.shell: iptables-save > /etc/iptables/rules.v4
       when: ansible_os_family == "Debian"
-      ignore_errors: yes  # Vì không phải máy nào cũng có gói iptables-persistent
+      ignore_errors: yes  # Nếu chưa cài iptables-persistent
