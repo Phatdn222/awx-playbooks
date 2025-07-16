@@ -1,10 +1,9 @@
-
 ---
 - name: Block a malicious IP using iptables
   hosts: all
   become: yes
   vars:
-    target_ip: "192.168.1.11"  # Mặc định, có thể override bằng Survey hoặc Extra Vars
+    target_ip: "192.168.1.11"
 
   tasks:
     - name: Block IP using iptables (only if not already blocked)
@@ -13,8 +12,12 @@
         iptables -A INPUT -s {{ target_ip }} -j DROP
       args:
         warn: false
+      environment:
+        PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
     - name: Save iptables rules (Debian/Ubuntu)
       ansible.builtin.shell: iptables-save > /etc/iptables/rules.v4
       when: ansible_os_family == "Debian"
-      ignore_errors: yes  # Nếu chưa cài iptables-persistent
+      ignore_errors: yes
+      environment:
+        PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
