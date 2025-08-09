@@ -1,30 +1,34 @@
----
-- name: Block a malicious IP using iptables
-  hosts: localhost
-  become: yes
-  vars:
-    target_ip: "192.168.1.11"
-
+- name: Manage UFW rules
+  hosts: 192.168.3.82
+  gather_facts: false
+  become: true
+  become_method: sudo
+  become_user: root
   tasks:
-    - name: Kiểm tra rule đã tồn tại chưa
-      ansible.builtin.command: >
-        iptables -C INPUT -s {{ target_ip }} -j DROP
-      register: check_rule
-      failed_when: false
+    - name: Debug all variables
+      debug:
+        msg: "All variables: {{ vars | to_json }}"
+      delegate_to: 192.168.3.82
 
-    - name: Thêm rule nếu chưa tồn tại
-      ansible.builtin.command: >
-        iptables -A INPUT -s {{ target_ip }} -j DROP
-      when: check_rule.rc != 0
+    - name: Debug data variable
+      debug:
+        msg: "Data variable: {{ data | default('not defined') }}"
+      delegate_to: 192.168.3.82
 
-    - name: Lưu iptables vào file
-      ansible.builtin.command: iptables-save
-      register: iptables_rules
+    - name: Block IP using UFW
+      ufw:
+        rule: deny
+        from_ip: "{{ data | default('') }}"
+      when: data | length > 0
+      delegate_to: 192.168.3.82
 
-    - name: Ghi file rules.v4
-      copy:
-        content: "{{ iptables_rules.stdout }}"
-        dest: /etc/iptables/rules.v4
+    - name: Debug UFW status
+      command: ufw status
+      register: ufw_status
+      changed_when: false
+      delegate_to: 192.168.3.82
 
-
-
+    - name: Display UFW status
+      debug:
+        msg: "UFW status: {{ ufw_status.stdout_lines }}"
+      delegate_to: 192.168.3.82
