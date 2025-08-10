@@ -1,5 +1,5 @@
 - name: Manage UFW rules
-  hosts: 192.168.3.82
+  hosts: 192.168.1.3
   gather_facts: false
   become: true
   become_method: sudo
@@ -8,25 +8,25 @@
     - name: Debug all variables
       debug:
         msg: "All variables: {{ vars | to_json }}"
-      delegate_to: 192.168.3.82
+      delegate_to: 192.168.1.3
 
     - name: Debug data variable
       debug:
         msg: "Data variable: {{ data | default('not defined') }}"
-      delegate_to: 192.168.3.82
+      delegate_to: 192.168.1.3
 
     - name: Block IP using UFW
       ufw:
         rule: deny
         from_ip: "{{ data | default('') }}"
       when: data | length > 0
-      delegate_to: 192.168.3.82
+      delegate_to: 192.168.1.3
 
     - name: Debug UFW status
       command: ufw status
       register: ufw_status
       changed_when: false
-      delegate_to: 192.168.3.82
+      delegate_to: 192.168.1.3
 
     - name: Display UFW status
       debug:
