@@ -31,4 +31,4 @@
     - name: Display UFW status
       debug:
         msg: "UFW status: {{ ufw_status.stdout_lines }}"
-      delegate_to: 192.168.3.82
+      delegate_to: 192.168.1.3
